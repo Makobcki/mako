@@ -75,6 +75,9 @@ border: none;</string>
       <property name="text">
        <string>0</string>
       </property>
+      <property name="maxLength">
+       <number>16</number>
+      </property>
       <property name="readOnly">
        <bool>true</bool>
       </property>
