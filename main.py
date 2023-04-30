@@ -12,7 +12,7 @@ operations = {
     "/": truediv,
 }
 zero = "дулить на ноль нельзя"
-zerodiv = "дулить на ноль нельзя"
+
 
 class Calculator(QMainWindow):
     def __init__(self):
@@ -21,32 +21,37 @@ class Calculator(QMainWindow):
         self.ui.setupUi(self)
         self.entry_max = self.ui.le_entry.maxLength()
 
-        self.ui.n0.clicked.connect(lambda: self.add_digit("0"))
-        self.ui.n1.clicked.connect(lambda: self.add_digit("1"))
-        self.ui.n2.clicked.connect(lambda: self.add_digit("2"))
-        self.ui.n3.clicked.connect(lambda: self.add_digit("3"))
-        self.ui.n4.clicked.connect(lambda: self.add_digit("4"))
-        self.ui.n5.clicked.connect(lambda: self.add_digit("5"))
-        self.ui.n6.clicked.connect(lambda: self.add_digit("6"))
-        self.ui.n7.clicked.connect(lambda: self.add_digit("7"))
-        self.ui.n8.clicked.connect(lambda: self.add_digit("8"))
-        self.ui.n9.clicked.connect(lambda: self.add_digit('9'))
+        self.ui.n0.clicked.connect(self.add_digit)
+        self.ui.n1.clicked.connect(self.add_digit)
+        self.ui.n2.clicked.connect(self.add_digit)
+        self.ui.n3.clicked.connect(self.add_digit)
+        self.ui.n4.clicked.connect(self.add_digit)
+        self.ui.n5.clicked.connect(self.add_digit)
+        self.ui.n6.clicked.connect(self.add_digit)
+        self.ui.n7.clicked.connect(self.add_digit)
+        self.ui.n8.clicked.connect(self.add_digit)
+        self.ui.n9.clicked.connect(self.add_digit)
         self.ui.ce.clicked.connect(self.clear_all)
         self.ui.c.clicked.connect(self.clear_entry)
-        self.ui.point.clicked.connect(lambda: self.add_point())
-        self.ui.plus.clicked.connect(lambda: self.math_op(" + "))
-        self.ui.min.clicked.connect(lambda: self.math_op(" - "))
-        self.ui.x.clicked.connect(lambda: self.math_op(" * "))
-        self.ui.dev.clicked.connect(lambda: self.math_op(" / "))
+        self.ui.point.clicked.connect(self.add_point)
+        self.ui.plus.clicked.connect(self.math_op)
+        self.ui.min.clicked.connect(self.math_op)
+        self.ui.x.clicked.connect(self.math_op)
+        self.ui.dev.clicked.connect(self.math_op)
         self.ui.res.clicked.connect(self.calculate)
         self.ui.pls.clicked.connect(self.min)
         self.ui.bak.clicked.connect(self.bac)
 
-    def add_digit(self, btn_text: str) -> None:
-        if self.ui.le_entry.text() == '0':
-            self.ui.le_entry.setText(btn_text)
-        else:
-            self.ui.le_entry.setText(self.ui.le_entry.text() + btn_text)
+    def add_digit(self):
+        btn = self.sender()
+        digit_button = ("n0", "n1", "n2", "n3", "n4",
+                        "n5", "n6", "n7", "n8", "n9")
+
+        if btn.objectName() in digit_button:
+            if self.ui.le_entry.text() == '0':
+                self.ui.le_entry.setText(btn.text())
+            else:
+                self.ui.le_entry.setText(self.ui.le_entry.text() + btn.text())
 
     def clear_all(self) -> None:
         self.ui.le_entry.setText('0')
@@ -80,8 +85,11 @@ class Calculator(QMainWindow):
         return n[:-2] if n[-2:] == ".0" else n
 
     def add_temp(self, math_sign: str):
+        btn = self.sender()
+        entry = self.remove_ziro(self.ui.le_entry.text())
+
         if not self.ui.lb.text() or self.get_math() == "=":
-            self.ui.lb.setText(self.remove_ziro(self.ui.le_entry.text()) + f"{math_sign}")
+            self.ui.lb.setText(entry + f" {btn.text()} ")
             self.ui.le_entry.setText("0")
 
     def num(self) -> Union[int, float]:
@@ -101,27 +109,34 @@ class Calculator(QMainWindow):
         entry = self.ui.le_entry.text()
         temp = self.ui.lb.text()
 
-        if temp:
-            result = self.remove_ziro(
-                str(operations[self.get_math()](self.lb_num(), self.num()))
-            )
-            self.ui.lb.setText(temp + self.remove_ziro(entry) + " =")
-            self.ui.le_entry.setText(result)
-            return result
+        try:
+            if temp:
+                result = self.remove_ziro(
+                    str(operations[self.get_math()](self.lb_num(), self.num()))
+                )
+                self.ui.lb.setText(temp + self.remove_ziro(entry) + " =")
+                self.ui.le_entry.setText(result)
+                return result
+        except KeyError:
+            pass
 
-    def math_op(self, math_sign: str):
+        except ZeroDivisionError:
+            self.ui.le_entry.setText(zero)
+
+    def math_op(self) -> None:
         temp = self.ui.lb.text()
+        btn = self.sender()
 
         if not temp:
-            self.add_temp(math_sign)
+            self.add_temp()
         else:
-            if self.get_math() != math_sign:
+            if self.get_math() != btn.text():
                 if self.get_math() == "=":
-                    self.add_temp(math_sign)
+                    self.add_temp()
                 else:
-                    self.ui.lb.setText(temp[:-2] + f'{math_sign}')
+                    self.ui.lb.setText(temp[:-2] + f' {btn.text()} ')
             else:
-                self.ui.lb.setText(self.calculate() + f" {math_sign} ")
+                self.ui.lb.setText(self.calculate() + f" {btn.text()} ")
 
     def min(self):
         entry = self.ui.le_entry.text()
