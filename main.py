@@ -109,8 +109,6 @@ class Calculator(QMainWindow):
             self.ui.le_entry.setText(result)
             return result
 
-
-
     def math_op(self, math_sign: str):
         temp = self.ui.lb.text()
 
