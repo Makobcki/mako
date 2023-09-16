@@ -3,7 +3,7 @@ from typing import Union, Optional
 from operator import add, sub, mul, truediv
 from PySide6.QtWidgets import QApplication, QMainWindow
 
-from design import Ui_MainWindow
+from design import Ui_Calkulater
 
 operations = {
     "+": add,
@@ -11,13 +11,13 @@ operations = {
     "*": mul,
     "/": truediv,
 }
-zero = "дулить на ноль нельзя"
+zero = "делить на ноль нельзя"
 
 
 class Calculator(QMainWindow):
     def __init__(self):
         super(Calculator, self).__init__()
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_Calkulater()
         self.ui.setupUi(self)
         self.entry_max = self.ui.le_entry.maxLength()
 
@@ -84,7 +84,7 @@ class Calculator(QMainWindow):
         n = str(float(num))
         return n[:-2] if n[-2:] == ".0" else n
 
-    def add_temp(self, math_sign: str):
+    def add_temp(self):
         btn = self.sender()
         entry = self.remove_ziro(self.ui.le_entry.text())
 
@@ -114,14 +114,14 @@ class Calculator(QMainWindow):
                 result = self.remove_ziro(
                     str(operations[self.get_math()](self.lb_num(), self.num()))
                 )
-                self.ui.lb.setText(temp + self.remove_ziro(entry) + " =")
+                self.ui.lb.setText(temp + self.remove_ziro(entry) + "=")
                 self.ui.le_entry.setText(result)
                 return result
         except KeyError:
             pass
 
         except ZeroDivisionError:
-            self.ui.le_entry.setText(zero)
+            self.ui.le_entry.setText('делить на ноль нельзя')
 
     def math_op(self) -> None:
         temp = self.ui.lb.text()
@@ -154,9 +154,7 @@ class Calculator(QMainWindow):
 
         self.ui.le_entry.setText(entry)
 
-
     def error(self, text: str) -> None:
-        self.ui.le_entry.setMaxLength(len(text))
         self.ui.le_entry.setText(text)
 
 
