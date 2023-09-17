@@ -69,7 +69,7 @@ class Ui_Calkulater(object):
 "border: none;\n"
 "background-color: #222;\n"
 "qApp->setLayoutDirection (Qt::RightToLeft);")
-        self.le_entry.setMaxLength(1000)
+        self.le_entry.setMaxLength(20)
         self.le_entry.setReadOnly(True)
 
         self.verticalLayout.addWidget(self.le_entry)

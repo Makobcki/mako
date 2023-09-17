@@ -4,14 +4,16 @@ from operator import add, sub, mul, truediv
 from PySide6.QtWidgets import QApplication, QMainWindow
 
 from design import Ui_Calkulater
-
 operations = {
     "+": add,
     "-": sub,
-    "*": mul,
+    "x": mul,
     "/": truediv,
 }
-zero = "делить на ноль нельзя"
+zero = "делить на 0 нельзя"
+
+d_f_s = 16
+d_e_f_s = 40
 
 
 class Calculator(QMainWindow):
@@ -52,32 +54,52 @@ class Calculator(QMainWindow):
                 self.ui.le_entry.setText(btn.text())
             else:
                 self.ui.le_entry.setText(self.ui.le_entry.text() + btn.text())
+        self.ad_fnt_size()
+        self.new_op()
 
     def clear_all(self) -> None:
         self.ui.le_entry.setText('0')
         self.ui.lb.clear()
+        self.ad_fnt_size()
 
     def clear_entry(self) -> None:
         self.ui.le_entry.setText('0')
+        self.ad_fnt_size()
+
+    def get_txt_width(self) -> int:
+        return self.ui.le_entry.fontMetrics().boundingRect(self.ui.le_entry.text()).width()
+
+    def get_lb_txt_width(self) -> int:
+        return self.ui.lb.fontMetrics().boundingRect(self.ui.lb.text()).width()
+
+    def ad_fnt_size(self) -> None:
+        font_size = d_e_f_s
+        while self.get_txt_width() > self.ui.le_entry.width():
+            font_size -= 1
+            self.ui.le_entry.setStyleSheet('font-size: ' + str(font_size) + 'pt; border: none;')
 
     def bac(self) -> None:
         entry = self.ui.le_entry.text()
 
-        if len(entry) != 1:
-            if len(entry) == 2 and "-" in entry:
-                entry = "0"
-            else:
-                entry = entry[:-1]
+        if entry == zero:
+            entry = '0'
         else:
-            entry = "0"
-
+            if len(entry) != 1:
+                if len(entry) == 2 and "-" in entry:
+                    entry = "0"
+                else:
+                    entry = entry[:-1]
+            else:
+                entry = "0"
         self.ui.le_entry.setText(entry)
+        self.ad_fnt_size()
 
     def add_point(self) -> None:
         if "." not in self.ui.le_entry.text():
             self.ui.le_entry.setText(self.ui.le_entry.text() + ".")
         else:
             self.ui.le_entry.setText(self.ui.le_entry.text())
+        self.ad_fnt_size()
 
     @staticmethod
     def remove_ziro(num: str) -> str:
@@ -88,9 +110,22 @@ class Calculator(QMainWindow):
         btn = self.sender()
         entry = self.remove_ziro(self.ui.le_entry.text())
 
-        if not self.ui.lb.text() or self.get_math() == "=":
-            self.ui.lb.setText(entry + f" {btn.text()} ")
-            self.ui.le_entry.setText("0")
+        if '=' in self.ui.lb.text():
+            self.ui.lb.setText()
+            self.ui.lb.setText(entry + f' {btn.text} ')
+        else:
+            if not self.ui.lb.text() or self.get_math() == "=":
+                self.ui.lb.setText(entry + f" {btn.text()} ")
+                self.ui.le_entry.setText('0')
+            self.ad_fnt_size()
+
+    def new_op(self):
+        btn = self.sender()
+        entry = self.remove_ziro(self.ui.le_entry.text())
+        if '=' in self.ui.lb.text():
+            self.ui.lb.setText(entry + f' {btn.text()} ')
+            entry = '0'
+        self.ui.le_entry.setText(entry)
 
     def num(self) -> Union[int, float]:
         entry = self.ui.le_entry.text().strip(".")
@@ -104,6 +139,7 @@ class Calculator(QMainWindow):
     def get_math(self) -> Optional[str]:
         if self.ui.lb.text():
             return self.ui.lb.text().strip(".").split()[-1]
+        self.ad_fnt_size()
 
     def calculate(self) -> Optional[str]:
         entry = self.ui.le_entry.text()
@@ -116,12 +152,15 @@ class Calculator(QMainWindow):
                 )
                 self.ui.lb.setText(temp + self.remove_ziro(entry) + "=")
                 self.ui.le_entry.setText(result)
+                self.ad_fnt_size()
                 return result
         except KeyError:
             pass
 
         except ZeroDivisionError:
-            self.ui.le_entry.setText('делить на ноль нельзя')
+            self.ui.le_entry.setText(zero)
+        self.ad_fnt_size()
+        self.new_op()
 
     def math_op(self) -> None:
         temp = self.ui.lb.text()
@@ -134,9 +173,11 @@ class Calculator(QMainWindow):
                 if self.get_math() == "=":
                     self.add_temp()
                 else:
-                    self.ui.lb.setText(temp[:-2] + f' {btn.text()} ')
+                    self.ui.lb.setText(temp[:-3] + f' {btn.text( )} ')
             else:
-                self.ui.lb.setText(self.calculate() + f" {btn.text()} ")
+                self.ui.lb.setText(self.calculate() + f" {btn.text( )} ")
+        self.ad_fnt_size()
+        self.new_op()
 
     def min(self):
         entry = self.ui.le_entry.text()
@@ -150,12 +191,10 @@ class Calculator(QMainWindow):
         if len(entry) == self.entry_max + 1 and "-" in entry:
             self.ui.le_entry.setMaxLength(self.entry_max + 1)
         else:
-            self.ui.le_entry.setMaxLength(16)
+            self.ui.le_entry.setMaxLength(20)
 
         self.ui.le_entry.setText(entry)
-
-    def error(self, text: str) -> None:
-        self.ui.le_entry.setText(text)
+        self.ad_fnt_size()
 
 
 if __name__ == "__main__":
